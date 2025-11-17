@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ingredientsList: document.getElementById("ingredients-list"),
     instructionsList: document.getElementById("instructions-list"),
     garnish: document.getElementById("garnish-text"),
+    zeroBase: document.getElementById("zero-base"),
   };
 
   // Name parts
@@ -45,6 +46,59 @@ document.addEventListener("DOMContentLoaded", () => {
     "Umeshu Plum Wine", "Red Wine", "White Wine", "Sparkling Wine",
     "Pale Ale", "Pilsner", "Stout"
   ];
+
+  // Zero-proof bases that can replace spirits when toggled on
+  const baseClassic = [
+    "Strong black tea", "Green tea", "Earl Grey tea", "Jasmine tea",
+    "Chamomile tea", "Oolong tea", "Cold brew coffee", "Espresso",
+    "Sparkling water", "Tonic water", "Ginger beer", "Coconut water",
+    "Apple cider (non-alc)", "White grape juice", "Pineapple juice"
+  ];
+  const baseExperimental = [
+    "Kombucha", "Green tea kombucha", "Hibiscus tea", "Rooibos tea",
+    "Roasted barley tea", "Lapsang souchong tea", "Yerba mate",
+    "Cold brew concentrate", "Verjus", "Tomato juice",
+    "Cucumber juice", "Celery juice", "Aloe juice"
+  ];
+  const baseWild = [
+    "Umeboshi water",
+    "Sea buckthorn juice",
+    "Beet juice",
+    "Carrot juice",
+    "Charcoal lemonade",
+    "Pickled watermelon brine + water (split base)",
+    "Kimchi brine + soda (split base)",
+    "Non-alcoholic bitter aperitif",
+    // Additions
+    "Celery brine + soda (split base)",
+    "Olive brine + cucumber water (split base)",
+    "Sumac water",
+    "Tamarind water",
+    "Black garlic water",
+    "Green peppercorn water",
+    "Roasted corn water",
+    "Roasted mushroom tea",
+    "Dashi-style kombu water (chilled)",
+    "Toasted rice tea (genmaicha-style)",
+    "Butterfly pea tea (unsweetened)",
+    "Hops tea (bitter infusion)",
+    "Gentian tea (bitter infusion)",
+    "Wheatgrass juice (cut with water)",
+    "Aloe + cucumber water (split base)",
+    "Celery + apple water (split base)",
+    "Cacao husk tea",
+    "Cold-smoked water",
+    "Activated charcoal water + citrus (split base)",
+    "Sauerkraut brine + water (split base)",
+    "Pickled jalapeño brine + soda (split base)"
+  ];
+
+  function basePoolFor(creativity) {
+    const tier = tierForCreativity(creativity);
+    if (tier === "classic") return baseClassic;
+    if (tier === "experimental") return baseClassic.concat(baseExperimental);
+    return baseClassic.concat(baseExperimental, baseWild);
+  }
 
   // Sours / bitters: classic + experimental + wild
   const sourClassic = [
@@ -161,7 +215,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const glassware = [
-    "Coupe", "Nick & Nora", "Rocks glass", "Double rocks", "Highball", "Collins", "Martini glass", "Tulip", "Tiki mug"
+    "Coupe",
+    "Nick & Nora",
+    "Rocks glass",
+    "Double rocks",
+    "Highball",
+    "Collins",
+    "Martini glass",
+    "Tulip",
+    "Tiki mug",
+    "Wine glass",
+    "Stemmed wine glass",
+    "Shot glass"
   ];
 
   const techniques = ["Shaken", "Stirred", "Blended"];
@@ -177,17 +242,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return "wild";
   }
 
-  function poolFor(category, creativity) {
+  // Non-alcoholic variants for sweet (exclude liqueurs)
+  const sweetClassicNA = [
+    "Simple syrup (1:1)", "Rich syrup (2:1)", "Demerara syrup", "Honey syrup", "Maple syrup", "Agave syrup",
+    "Grenadine", "Orgeat (almond)", "Velvet Falernum (NA)", "Vanilla syrup", "Cinnamon syrup", "Ginger syrup",
+    "Cream of coconut", "Coconut syrup", "Passion fruit syrup", "Strawberry syrup", "Raspberry syrup", "Blackberry syrup",
+    "Blueberry syrup", "Peach syrup", "Pear syrup", "Mango syrup", "Pineapple syrup", "Banana syrup",
+    "Caramel syrup", "Chocolate syrup", "White chocolate syrup", "Elderflower cordial",
+    "Rock candy syrup", "Demarara gum syrup"
+  ];
+  const sweetExperimentalNA = sweetExperimental.slice();
+  const sweetWildNA = sweetWild.slice();
+
+  function poolFor(category, creativity, zeroProof = false) {
     const tier = tierForCreativity(creativity);
     if (category === "sour") {
+      // Sour lists are already NA-friendly; reuse as-is
       if (tier === "classic") return sourClassic;
       if (tier === "experimental") return sourClassic.concat(sourExperimental);
       return sourClassic.concat(sourExperimental, sourWild);
     }
     if (category === "sweet") {
-      if (tier === "classic") return sweetClassic;
-      if (tier === "experimental") return sweetClassic.concat(sweetExperimental);
-      return sweetClassic.concat(sweetExperimental, sweetWild);
+      if (zeroProof) {
+        if (tier === "classic") return sweetClassicNA;
+        if (tier === "experimental") return sweetClassicNA.concat(sweetExperimentalNA);
+        return sweetClassicNA.concat(sweetExperimentalNA, sweetWildNA);
+      } else {
+        if (tier === "classic") return sweetClassic;
+        if (tier === "experimental") return sweetClassic.concat(sweetExperimental);
+        return sweetClassic.concat(sweetExperimental, sweetWild);
+      }
     }
     if (category === "garnish") {
       if (tier === "classic") return garnishClassic;
@@ -340,11 +424,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const tier = tierForCreativity(creativity);
 
     const name = generateName();
-    const baseSpirit = pick(spirits);
+    const useZeroBase = !!(el.zeroBase && el.zeroBase.checked);
+    const baseSpirit = useZeroBase ? pick(basePoolFor(creativity)) : pick(spirits);
 
-    const sourPool = poolFor("sour", creativity);
-    const sweetPool = poolFor("sweet", creativity);
-    const garnishPool = poolFor("garnish", creativity);
+    const sourPool = poolFor("sour", creativity, useZeroBase);
+    const sweetPool = poolFor("sweet", creativity, useZeroBase);
+    const garnishPool = poolFor("garnish", creativity, useZeroBase);
 
     const sour = pick(sourPool);
     const sweet = pick(sweetPool);
@@ -354,9 +439,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const glass = pick(glassware);
 
     // Optional extra: bitters or other ingredient
-    const useExtra = coinFlip(0.75); // slightly higher for more variety
-    const useBitters = coinFlip(0.6);
-    const extra = useBitters ? pick(extrasBitters) : pick(extrasOther);
+    let useExtra = coinFlip(0.75); // slightly higher for more variety
+    let useBitters = coinFlip(0.6);
+    let extra = useBitters ? pick(extrasBitters) : pick(extrasOther);
+
+    // If zero-proof base, avoid alcoholic extras (bitters, rinses, vermouth, sparkling wine)
+    if (useZeroBase) {
+      useBitters = false;
+      const naExtras = extrasOther.filter((e) => {
+        const l = e.toLowerCase();
+        return !(
+          l.includes("rinse") ||
+          l.includes("vermouth") ||
+          l.includes("sparkling wine")
+        );
+      });
+      extra = pick(naExtras);
+    }
+
     const hasEggWhite = extra === "Egg white" || extra === "Aquafaba";
 
     // Variable ratio: ranges from strong (5:2:1) to balanced (3:2:1) to equal (1:1:1)
@@ -364,10 +464,22 @@ document.addEventListener("DOMContentLoaded", () => {
       [3, 2, 1], [3.5, 2, 1], [3, 1.5, 1], [2.75, 2, 1], [3, 2, 0.75]
     ];
     const ratioOptionsExperimental = [
-      [4, 2, 1], [3.5, 2, 1.5], [3, 2, 2], [2.5, 1.5, 1], [2.25, 1.5, 1], [2, 1.5, 1.25]
+      // Spirit-forward with nuanced support
+      [4, 2, 1], [3.75, 2, 1], [3.5, 2, 1.5],
+      // More tart or sweeter leans
+      [3, 2.25, 1], [3, 2, 1.5], [3, 1.5, 1.25],
+      // Light and bright
+      [2.5, 1.5, 1], [2.25, 1.5, 1], [2, 1.5, 1.25],
+      // Slightly odd but workable
+      [2.25, 2, 1], [2, 2, 1], [2.25, 1, 1.5]
     ];
     const ratioOptionsWild = [
-      [5, 2, 1], [4, 3, 2], [3, 3, 2], [2, 2, 2], [1.5, 1.5, 1.5], [1, 1, 1]
+      // Bold extremes (still spirit-present)
+      [5, 2, 1], [5.5, 1, 0.5], [4.5, 1, 0.5],
+      // Split dominance by acidity or sweetness without minimizing spirit entirely
+      [3, 3, 2], [2.5, 3.5, 1.5], [2, 3.5, 2],
+      // Nearly equal parts to fully equal
+      [2, 2, 2], [1.5, 1.5, 1.5], [1, 1, 1]
     ];
     const parts = tier === "classic"
       ? pick(ratioOptionsClassic)

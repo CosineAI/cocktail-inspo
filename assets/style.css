@@ -180,6 +180,20 @@ input[type="range"]::-webkit-slider-thumb {
 .actions {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  padding-top: 0.4rem;
+}
+
+.label.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--cream);
+}
+
+.label.inline input[type="checkbox"] {
+  transform: translateY(1px);
 }
 
 .deco-btn {
