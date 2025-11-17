@@ -152,8 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const extrasOther = [
-    "Egg white", "Aquafaba", "Soda water top", "Ginger beer top", "Absinthe rinse", "Dry vermouth (dash)",
-    "Saline solution (small dash)", "Hot sauce (dash)", "Espresso (dash)", "Pickle brine (dash)",
+    "Egg white", "Aquafaba",
+    "Soda water top", "Ginger beer top", "Sparkling wine top", "Tonic water top", "Coconut water top", "Yuzu soda top",
+    "Absinthe rinse", "Peated Scotch rinse",
+    "Orange blossom water spritz", "Rosewater spritz", "Smoked glass (rosemary)",
+    "Dry vermouth (dash)", "Saline solution (small dash)", "Hot sauce (dash)", "Espresso (dash)", "Pickle brine (dash)",
     "Activated charcoal (pinch)", "Mint leaves (muddle)", "Basil leaves (muddle)"
   ];
 
@@ -165,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const coinFlip = (p = 0.5) => Math.random() < p;
+  const contains = (txt, sub) => (txt || "").toLowerCase().includes(sub.toLowerCase());
 
   function tierForCreativity(val) {
     const v = Number(val);
@@ -205,14 +209,120 @@ document.addEventListener("DOMContentLoaded", () => {
     return "Blended";
   }
 
-  function instructionsFor(technique, glass, garnish, hasEggWhite) {
+  function buildInstructions({ technique, glass, garnish, extra, useExtra, useBitters, hasEggWhite, tier }) {
+    const steps = [];
+    const garnishLower = (garnish || "").toLowerCase();
+    const extraLower = (extra || "").toLowerCase();
+
+    const hasRim = /rim/.test(garnishLower);
+    const hasTwistOrPeel = /(twist|peel)/.test(garnishLower);
+    const isFlamePeel = /flame/.test(garnishLower);
+    const isMuddle = contains(extraLower, "muddle");
+    const isRinse = contains(extraLower, "rinse");
+    const isTop = contains(extraLower, "top");
+    const topLabel = isTop
+      ? (extraLower.replace(" top", "").replace("yuzu soda", "yuzu soda").replace("coconut water", "coconut water"))
+      : null;
+
+    // Glass prep
+    if (hasRim) {
+      steps.push(`Rim the ${glass} with ${garnishLower.replace(" rim", "")} and set aside.`);
+    } else if (isRinse) {
+      steps.push(`Rinse the chilled ${glass} with ${extraLower.replace(" rinse", "")}; discard excess.`);
+    } else if (tier !== "classic" && coinFlip(tier === "wild" ? 0.7 : 0.4)) {
+      // Optional smoked or chilled glass
+      if (contains(garnishLower, "rosemary") && coinFlip(0.6)) {
+        steps.push(`Briefly ignite the rosemary and smoke-rinse the ${glass}, then set aside.`);
+      } else if (contains(extraLower, "smoked glass")) {
+        steps.push(`Smoke-rinse the ${glass} with rosemary and set aside.`);
+      } else {
+        steps.push(`Chill a ${glass} with ice or in the freezer.`);
+      }
+    }
+
+    // Muddle step if relevant
+    if (isMuddle) {
+      const herb = contains(extraLower, "mint") ? "mint" : contains(extraLower, "basil") ? "basil" : "herbs";
+      steps.push(`Lightly muddle the ${herb} in your ${technique === "Stirred" ? "mixing glass" : "shaker"}.`);
+    }
+
+    // Build method based on technique
     if (technique === "Shaken") {
-      return `Add all ingredients${hasEggWhite ? " (dry shake first, then)" : ""} to a shaker with ice. Shake briskly for 12–15 seconds. Strain into a chilled ${glass}. Garnish with ${garnish.toLowerCase()}.`;
+      if (hasEggWhite) {
+        if (tier === "wild" && coinFlip(0.5)) {
+          steps.push("Shake all ingredients except the egg white with ice (10–12 sec).");
+          steps.push("Strain back, add egg white, and dry shake vigorously to foam.");
+        } else {
+          steps.push("Dry shake all ingredients vigorously (no ice) to build foam.");
+          steps.push("Add ice and hard shake (12–15 sec).");
+        }
+      } else {
+        if (tier !== "classic" && coinFlip(0.5)) {
+          steps.push("Whip shake with a single small cube until it nearly dissolves.");
+        } else {
+          steps.push("Shake briskly with ice (12–15 sec).");
+        }
+      }
+
+      // Straining variants
+      if (tier !== "classic" && coinFlip(tier === "wild" ? 0.6 : 0.35)) {
+        steps.push(`Double strain into the ${glass}${hasRim ? "" : " (fine mesh optional)"}.`);
+      } else if (tier === "wild" && coinFlip(0.3)) {
+        steps.push(`Dirty pour into the ${glass} with ice.`);
+      } else {
+        steps.push(`Strain into the ${glass}.`);
+      }
+    } else if (technique === "Stirred") {
+      steps.push("Add all ingredients to a mixing glass with ice.");
+      steps.push("Stir until well chilled and clear (15–20 sec).");
+      if (tier === "wild" && coinFlip(0.35)) {
+        steps.push("Optionally 'throw' the drink between tins a few times to aerate.");
+      }
+      steps.push(`Strain into the ${glass}${tier !== "classic" && coinFlip(0.5) ? " over a large clear cube" : ""}.`);
+    } else {
+      // Blended
+      steps.push("Add all ingredients to a blender with a generous handful of ice.");
+      steps.push("Blend until smooth (8–10 sec).");
+      steps.push(`Pour into the ${glass}.`);
     }
-    if (technique === "Stirred") {
-      return `Add all ingredients to a mixing glass with ice. Stir for 15–20 seconds until well chilled. Strain into a ${glass}. Garnish with ${garnish.toLowerCase()}.`;
+
+    // Top with sodas/etc
+    if (isTop) {
+      const label = extra.replace(/ top/i, "");
+      steps.push(`Top with ${label.toLowerCase()}.`);
     }
-    return `Add all ingredients to a blender with a handful of ice. Blend until smooth. Pour into a ${glass}. Garnish with ${garnish.toLowerCase()}.`;
+
+    // Spritzes
+    if (useExtra && (contains(extraLower, "spritz"))) {
+      steps.push(`Give the surface a light ${extraLower}.`);
+    }
+
+    // Garnish and finish
+    if (isFlamePeel) {
+      steps.push("Warm an orange peel, flame the oils over the surface, then garnish.");
+    } else if (hasTwistOrPeel) {
+      steps.push("Express the citrus oils over the surface, then garnish.");
+    }
+
+    // Bitters art if foamy
+    if (hasEggWhite && useExtra && useBitters && tier !== "classic" && coinFlip(0.7)) {
+      steps.push("Dot the foam with bitters and draw simple patterns with a pick.");
+    }
+
+    // Default garnish placement
+    if (!hasRim) {
+      if (/oyster/.test(garnishLower)) {
+        steps.push("Serve with the oyster on the shell alongside or perched carefully.");
+      } else if (/quail egg/.test(garnishLower)) {
+        steps.push("Gently float the quail egg on the surface.");
+      } else if (/gold leaf/.test(garnishLower)) {
+        steps.push("Lay a small piece of gold leaf gently on top.");
+      } else {
+        steps.push(`Garnish with ${garnishLower}.`);
+      }
+    }
+
+    return steps.map((s, i) => `${i + 1}) ${s}`).join("<br>");
   }
 
   function resetList(ul) {
@@ -227,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function generateCocktail() {
     const creativity = el.creativity.value;
+    const tier = tierForCreativity(creativity);
 
     const name = generateName();
     const baseSpirit = pick(spirits);
@@ -243,8 +354,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const glass = pick(glassware);
 
     // Optional extra: bitters or other ingredient
-    const useExtra = coinFlip(0.65);
-    const useBitters = coinFlip(0.7);
+    const useExtra = coinFlip(0.75); // slightly higher for more variety
+    const useBitters = coinFlip(0.6);
     const extra = useBitters ? pick(extrasBitters) : pick(extrasOther);
     const hasEggWhite = extra === "Egg white" || extra === "Aquafaba";
 
@@ -267,12 +378,23 @@ document.addEventListener("DOMContentLoaded", () => {
         addIngredient(el.ingredientsList, `2 dashes ${extra}`);
       } else {
         // small supporting measure
-        const measure = hasEggWhite ? "" : "0.25 oz ";
+        const measure = hasEggWhite ? "" : (contains(extra.toLowerCase(), "top") ? "" : "0.25 oz ");
         addIngredient(el.ingredientsList, `${measure}${extra}`);
       }
     }
 
-    el.instructions.textContent = instructionsFor(tech, glass, garnish, hasEggWhite);
+    // Build instructions with optional steps based on creativity
+    el.instructions.innerHTML = buildInstructions({
+      technique: tech,
+      glass,
+      garnish,
+      extra,
+      useExtra,
+      useBitters,
+      hasEggWhite,
+      tier
+    });
+
     el.garnish.textContent = garnish;
   }
 
