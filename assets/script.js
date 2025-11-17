@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     technique: document.getElementById("technique"),
     glassware: document.getElementById("glassware"),
     ingredientsList: document.getElementById("ingredients-list"),
-    instructions: document.getElementById("instructions-text"),
+    instructionsList: document.getElementById("instructions-list"),
     garnish: document.getElementById("garnish-text"),
   };
 
@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    return steps.map((s, i) => `${i + 1}) ${s}`).join("<br>");
+    return steps;
   }
 
   function resetList(ul) {
@@ -384,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Build instructions with optional steps based on creativity
-    el.instructions.innerHTML = buildInstructions({
+    const steps = buildInstructions({
       technique: tech,
       glass,
       garnish,
@@ -394,6 +394,9 @@ document.addEventListener("DOMContentLoaded", () => {
       hasEggWhite,
       tier
     });
+
+    resetList(el.instructionsList);
+    steps.forEach((s) => addIngredient(el.instructionsList, s));
 
     el.garnish.textContent = garnish;
   }
