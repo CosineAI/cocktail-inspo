@@ -359,10 +359,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const extra = useBitters ? pick(extrasBitters) : pick(extrasOther);
     const hasEggWhite = extra === "Egg white" || extra === "Aquafaba";
 
-    // Measurements honoring ~3:2:1
-    const alcoholMeasure = "1.5 oz";
-    const sourMeasure = "1 oz";
-    const sweetMeasure = "0.5 oz";
+    // Variable ratio: ranges from strong (5:2:1) to balanced (3:2:1) to equal (1:1:1)
+    const ratioOptionsClassic = [
+      [3, 2, 1], [3.5, 2, 1], [3, 1.5, 1], [2.75, 2, 1], [3, 2, 0.75]
+    ];
+    const ratioOptionsExperimental = [
+      [4, 2, 1], [3.5, 2, 1.5], [3, 2, 2], [2.5, 1.5, 1], [2.25, 1.5, 1], [2, 1.5, 1.25]
+    ];
+    const ratioOptionsWild = [
+      [5, 2, 1], [4, 3, 2], [3, 3, 2], [2, 2, 2], [1.5, 1.5, 1.5], [1, 1, 1]
+    ];
+    const parts = tier === "classic"
+      ? pick(ratioOptionsClassic)
+      : tier === "experimental"
+        ? pick(ratioOptionsExperimental)
+        : pick(ratioOptionsWild);
+
+    const PART_OZ = 0.5; // one "part" equals half an ounce
+    const alcoholOz = parts[0] * PART_OZ;
+    const sourOz = parts[1] * PART_OZ;
+    const sweetOz = parts[2] * PART_OZ;
+
+    const fmt = (n) => {
+      const s = (Math.round(n * 100) / 100).toFixed(2);
+      return `${s.replace(/\.00$/, "")} oz`;
+    };
 
     // Populate UI
     el.name.textContent = name;
@@ -370,9 +391,9 @@ document.addEventListener("DOMContentLoaded", () => {
     el.glassware.textContent = glass;
 
     resetList(el.ingredientsList);
-    addIngredient(el.ingredientsList, `${alcoholMeasure} ${baseSpirit}`);
-    addIngredient(el.ingredientsList, `${sourMeasure} ${sour}`);
-    addIngredient(el.ingredientsList, `${sweetMeasure} ${sweet}`);
+    addIngredient(el.ingredientsList, `${fmt(alcoholOz)} ${baseSpirit}`);
+    addIngredient(el.ingredientsList, `${fmt(sourOz)} ${sour}`);
+    addIngredient(el.ingredientsList, `${fmt(sweetOz)} ${sweet}`);
     if (useExtra) {
       if (useBitters) {
         addIngredient(el.ingredientsList, `2 dashes ${extra}`);
