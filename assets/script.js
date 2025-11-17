@@ -242,17 +242,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return "wild";
   }
 
-  function poolFor(category, creativity) {
+  // Non-alcoholic variants for sweet (exclude liqueurs)
+  const sweetClassicNA = [
+    "Simple syrup (1:1)", "Rich syrup (2:1)", "Demerara syrup", "Honey syrup", "Maple syrup", "Agave syrup",
+    "Grenadine", "Orgeat (almond)", "Velvet Falernum (NA)", "Vanilla syrup", "Cinnamon syrup", "Ginger syrup",
+    "Cream of coconut", "Coconut syrup", "Passion fruit syrup", "Strawberry syrup", "Raspberry syrup", "Blackberry syrup",
+    "Blueberry syrup", "Peach syrup", "Pear syrup", "Mango syrup", "Pineapple syrup", "Banana syrup",
+    "Caramel syrup", "Chocolate syrup", "White chocolate syrup", "Elderflower cordial",
+    "Rock candy syrup", "Demarara gum syrup"
+  ];
+  const sweetExperimentalNA = sweetExperimental.slice();
+  const sweetWildNA = sweetWild.slice();
+
+  function poolFor(category, creativity, zeroProof = false) {
     const tier = tierForCreativity(creativity);
     if (category === "sour") {
+      // Sour lists are already NA-friendly; reuse as-is
       if (tier === "classic") return sourClassic;
       if (tier === "experimental") return sourClassic.concat(sourExperimental);
       return sourClassic.concat(sourExperimental, sourWild);
     }
     if (category === "sweet") {
-      if (tier === "classic") return sweetClassic;
-      if (tier === "experimental") return sweetClassic.concat(sweetExperimental);
-      return sweetClassic.concat(sweetExperimental, sweetWild);
+      if (zeroProof) {
+        if (tier === "classic") return sweetClassicNA;
+        if (tier === "experimental") return sweetClassicNA.concat(sweetExperimentalNA);
+        return sweetClassicNA.concat(sweetExperimentalNA, sweetWildNA);
+      } else {
+        if (tier === "classic") return sweetClassic;
+        if (tier === "experimental") return sweetClassic.concat(sweetExperimental);
+        return sweetClassic.concat(sweetExperimental, sweetWild);
+      }
     }
     if (category === "garnish") {
       if (tier === "classic") return garnishClassic;
@@ -408,9 +427,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const useZeroBase = !!(el.zeroBase && el.zeroBase.checked);
     const baseSpirit = useZeroBase ? pick(basePoolFor(creativity)) : pick(spirits);
 
-    const sourPool = poolFor("sour", creativity);
-    const sweetPool = poolFor("sweet", creativity);
-    const garnishPool = poolFor("garnish", creativity);
+    const sourPool = poolFor("sour", creativity, useZeroBase);
+    const sweetPool = poolFor("sweet", creativity, useZeroBase);
+    const garnishPool = poolFor("garnish", creativity, useZeroBase);
 
     const sour = pick(sourPool);
     const sweet = pick(sweetPool);
