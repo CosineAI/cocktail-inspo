@@ -161,7 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const glassware = [
-    "Coupe", "Nick & Nora", "Rocks glass", "Double rocks", "Highball", "Collins", "Martini glass", "Tulip", "Tiki mug"
+    "Coupe",
+    "Nick & Nora",
+    "Rocks glass",
+    "Double rocks",
+    "Highball",
+    "Collins",
+    "Martini glass",
+    "Tulip",
+    "Tiki mug",
+    "Wine glass",
+    "Stemmed wine glass",
+    "Shot glass"
   ];
 
   const techniques = ["Shaken", "Stirred", "Blended"];
@@ -364,10 +375,24 @@ document.addEventListener("DOMContentLoaded", () => {
       [3, 2, 1], [3.5, 2, 1], [3, 1.5, 1], [2.75, 2, 1], [3, 2, 0.75]
     ];
     const ratioOptionsExperimental = [
-      [4, 2, 1], [3.5, 2, 1.5], [3, 2, 2], [2.5, 1.5, 1], [2.25, 1.5, 1], [2, 1.5, 1.25]
+      // Spirit-forward with nuanced support
+      [4, 2, 1], [3.75, 2, 1], [3.5, 2, 1.5],
+      // More tart or sweeter leans
+      [3, 2.25, 1], [3, 2, 1.5], [3, 1.5, 1.25],
+      // Light and bright
+      [2.5, 1.5, 1], [2.25, 1.5, 1], [2, 1.5, 1.25],
+      // Slightly odd but workable
+      [2.25, 2, 1], [2, 2, 1], [2.25, 1, 1.5]
     ];
     const ratioOptionsWild = [
-      [5, 2, 1], [4, 3, 2], [3, 3, 2], [2, 2, 2], [1.5, 1.5, 1.5], [1, 1, 1]
+      // Bold extremes
+      [5, 2, 1], [5.5, 1, 0.5], [4.5, 1, 0.5],
+      // Split dominance by acidity or sweetness
+      [3, 3, 2], [2, 3.5, 1.5], [1.5, 3.5, 2],
+      // Nearly equal parts to fully equal
+      [2, 2, 2], [1.5, 1.5, 1.5], [1, 1, 1],
+      // Minimal spirit, big modifier energy
+      [1, 2.5, 2.5], [0.75, 2.5, 3], [0.5, 2.5, 3.5]
     ];
     const parts = tier === "classic"
       ? pick(ratioOptionsClassic)
