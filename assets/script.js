@@ -61,9 +61,36 @@ document.addEventListener("DOMContentLoaded", () => {
     "Cucumber juice", "Celery juice", "Aloe juice"
   ];
   const baseWild = [
-    "Umeboshi water", "Sea buckthorn juice", "Beet juice", "Carrot juice",
-    "Charcoal lemonade", "Pickled watermelon brine + water (split base)",
-    "Kimchi brine + soda (split base)", "Non-alcoholic bitter aperitif"
+    "Umeboshi water",
+    "Sea buckthorn juice",
+    "Beet juice",
+    "Carrot juice",
+    "Charcoal lemonade",
+    "Pickled watermelon brine + water (split base)",
+    "Kimchi brine + soda (split base)",
+    "Non-alcoholic bitter aperitif",
+    // Additions
+    "Celery brine + soda (split base)",
+    "Olive brine + cucumber water (split base)",
+    "Sumac water",
+    "Tamarind water",
+    "Black garlic water",
+    "Green peppercorn water",
+    "Roasted corn water",
+    "Roasted mushroom tea",
+    "Dashi-style kombu water (chilled)",
+    "Toasted rice tea (genmaicha-style)",
+    "Butterfly pea tea (unsweetened)",
+    "Hops tea (bitter infusion)",
+    "Gentian tea (bitter infusion)",
+    "Wheatgrass juice (cut with water)",
+    "Aloe + cucumber water (split base)",
+    "Celery + apple water (split base)",
+    "Cacao husk tea",
+    "Cold-smoked water",
+    "Activated charcoal water + citrus (split base)",
+    "Sauerkraut brine + water (split base)",
+    "Pickled jalapeño brine + soda (split base)"
   ];
 
   function basePoolFor(creativity) {
